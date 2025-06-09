@@ -7,6 +7,20 @@ import (
 	"time"
 )
 
+var cacheMap map[string]any
+
+func init() {
+	cacheMap = map[string]any{
+		"celery":  "seett",
+		"banana":  "peel",
+		"cherry":  "pit",
+		"apricot": "pit",
+		"peach":   "pit",
+		"apple":   "seed",
+		"grape":   "pit",
+	}
+}
+
 func TestCacheHappyPathWithExpire(t *testing.T) {
 	// Create a context for the cache eviction
 	ctx, cancel := context.WithCancel(context.Background())
@@ -17,12 +31,6 @@ func TestCacheHappyPathWithExpire(t *testing.T) {
 
 	// Start eviction routine
 	c.StartEvictionChecks(ctx)
-
-	cacheMap := map[string]any{
-		"mykey1": "value1",
-		"banana": "peel",
-		"cherry": "pit",
-	}
 
 	// Add key-value pairs to the cache
 	for key, value := range cacheMap {
@@ -62,12 +70,6 @@ func TestCacheMultiThreadWrite(t *testing.T) {
 	// Start eviction routine
 	c.StartEvictionChecks(ctx)
 
-	cacheMap := map[string]any{
-		"mykey1": "value1",
-		"banana": "peel",
-		"cherry": "pit",
-	}
-
 	for key, value := range cacheMap {
 		println("storing key: %s, value: %s", key, value)
 		go func() {
@@ -98,12 +100,6 @@ func TestCacheMultiThreadRead(t *testing.T) {
 
 	// Start eviction routine
 	c.StartEvictionChecks(ctx)
-
-	cacheMap := map[string]any{
-		"mykey1": "value1",
-		"banana": "peel",
-		"cherry": "pit",
-	}
 
 	// Add key-value pairs to the cache
 	for key, value := range cacheMap {

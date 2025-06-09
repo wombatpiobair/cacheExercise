@@ -109,7 +109,7 @@ func TestCacheMultiThreadRead(t *testing.T) {
 		}
 	}
 
-	// Add key-value pairs to the cache
+	// Read keys from the cache
 	for key, value := range cacheMap {
 		println("fetching key: %s", key)
 		go func() {

@@ -88,10 +88,51 @@ func TestCacheMultiThreadWrite(t *testing.T) {
 
 }
 
+func TestCacheMultiThreadRead(t *testing.T) {
+	// Create a context for the cache eviction
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	// Create a cache with a check ticker of 1 second and a record eviction of 5 seconds
+	c := New(time.Second, 5*time.Second)
+
+	// Start eviction routine
+	c.StartEvictionChecks(ctx)
+
+	cacheMap := map[string]any{
+		"mykey1": "value1",
+		"banana": "peel",
+		"cherry": "pit",
+	}
+
+	// Add key-value pairs to the cache
+	for key, value := range cacheMap {
+		err := c.Add(key, value)
+		if err != nil {
+			t.Error(err)
+		}
+	}
+
+	// Add key-value pairs to the cache
+	for key, value := range cacheMap {
+		println("fetching key: %s", key)
+		go func() {
+			readWorker(t, c, key, value)
+		}()
+	}
+
+}
+
 func writeWorker(c *MemCache, key string, value any) error {
 	err := c.Add(key, value)
 	if err != nil {
 		return err
 	}
 	return nil
+}
+
+func readWorker(t *testing.T, c *MemCache, key string, value any) {
+	fetchedValue, found := c.Get(key)
+	assert.True(t, found, "key not found in cache")
+	assert.Equal(t, fetchedValue, value, "value does not match")
 }

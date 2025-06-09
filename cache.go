@@ -22,7 +22,7 @@ func (e *DuplicateKeyError) Error() string {
 
 // VCache: a struct that implements a simple in-memory key-value cache with eviction.
 type MemCache struct {
-	timeToLiveInSeconds   int64
+	timeToLiveInSeconds   time.Duration
 	evictionCheckInterval time.Duration
 	store                 map[any]*cacheValue
 
@@ -43,7 +43,7 @@ func New(checkInterval time.Duration, timeRecordEvict time.Duration) *MemCache {
 		mutex:                 &sync.RWMutex{},
 		store:                 make(map[any]*cacheValue),
 		evictionCheckInterval: checkInterval,
-		timeToLiveInSeconds:   int64(timeRecordEvict.Seconds()),
+		timeToLiveInSeconds:   timeRecordEvict,
 	}
 }
 
@@ -57,7 +57,7 @@ func (c *MemCache) Add(key any, value any) error {
 }
 
 // add a key to the cache with explicit expire time.
-func (c *MemCache) AddWithExpireTime(key any, value any, timeToLiveInSeconds int64) error {
+func (c *MemCache) AddWithExpireTime(key any, value any, timeToLiveInSeconds time.Duration) error {
 	// lock the cache for an add
 	c.mutex.Lock()
 	defer c.mutex.Unlock()
@@ -68,7 +68,7 @@ func (c *MemCache) AddWithExpireTime(key any, value any, timeToLiveInSeconds int
 	}
 
 	currentTime := time.Now()
-	expireTime := currentTime.Add(time.Duration(timeToLiveInSeconds) * time.Second)
+	expireTime := currentTime.Add(timeToLiveInSeconds)
 	c.store[key] = &cacheValue{
 		value:          value,
 		expirationTime: expireTime,
